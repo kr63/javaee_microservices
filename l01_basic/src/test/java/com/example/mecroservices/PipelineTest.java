@@ -2,7 +2,6 @@ package com.example.mecroservices;
 
 import org.junit.Test;
 
-import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
