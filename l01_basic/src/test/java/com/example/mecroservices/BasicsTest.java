@@ -5,6 +5,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BasicsTest {
 
@@ -18,8 +20,9 @@ public class BasicsTest {
     private void display() {
         System.out.println("ha-ha-ha");
         try {
-            Thread.sleep(100_000_000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
+            Logger.getLogger(BasicsTest.class.getName()).log(Level.SEVERE, null, e);
             e.printStackTrace();
         }
     }
@@ -39,10 +42,32 @@ public class BasicsTest {
             futures.add(futureResult);
         }
 
-        for (Future<String> future: futures) {
+        for (Future<String> future : futures) {
             String result = future.get();
             System.out.println("Result: " + result);
         }
+    }
+
+    @Test
+    public void backPressure() {
+        BlockingQueue<Runnable> queue = new LinkedBlockingDeque<>(2);
+        ThreadPoolExecutor tp = new ThreadPoolExecutor(
+                1, 1,
+                60, TimeUnit.SECONDS,
+                queue, new ThreadPoolExecutor.CallerRunsPolicy());
+        long start = System.currentTimeMillis();
+        tp.submit(this::display);
+        duration(start);
+        tp.submit(this::display);
+        duration(start);
+        tp.submit(this::display);
+        duration(start);
+        tp.submit(this::display);
+        duration(start);
+    }
+
+    private void duration(long start) {
+        System.out.println("-- took: " + (System.currentTimeMillis() - start));
     }
 
     @Test
