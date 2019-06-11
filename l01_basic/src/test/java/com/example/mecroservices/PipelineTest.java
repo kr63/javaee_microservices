@@ -2,7 +2,12 @@ package com.example.mecroservices;
 
 import org.junit.Test;
 
+import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PipelineTest {
 
@@ -15,12 +20,34 @@ public class PipelineTest {
     }
 
     @Test
-    public void combiningPipelines() {
-        CompletableFuture<String> first = CompletableFuture.supplyAsync(this::message);
-        CompletableFuture<String> second = CompletableFuture.supplyAsync(this::greetings);
+    public void combiningPipelines() throws ExecutionException, InterruptedException {
+
+        long start = System.currentTimeMillis();
+
+        CompletableFuture<String> first =
+                CompletableFuture.supplyAsync(this::message)
+                        .thenApplyAsync(this::beautify);
+
+        CompletableFuture<String> second =
+                CompletableFuture.supplyAsync(this::greetings)
+                        .thenApplyAsync(this::beautify);
+
         first.thenCombine(second, this::combinator)
-                .thenApply(this::beautify)
+                .thenAccept(this::consumeMessage).get();
+
+        System.out.println("\nTake time: " + (System.currentTimeMillis() - start));
+    }
+
+    @Test
+    public void composingPipelines() {
+        CompletableFuture.supplyAsync(this::message)
+                .thenCompose(this::compose)
                 .thenAccept(this::consumeMessage);
+    }
+
+    private CompletionStage<String> compose(String input) {
+        return CompletableFuture.supplyAsync(() -> input)
+                .thenApply(this::beautify);
     }
 
     private String message() {
@@ -36,8 +63,12 @@ public class PipelineTest {
     }
 
     private String beautify(String input) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Logger.getLogger(PipelineTest.class.getName()).log(Level.SEVERE, null, e);
+        }
         return "[+ " + input + " +]";
-
     }
 
     private void consumeMessage(String message) {
