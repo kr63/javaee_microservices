@@ -10,13 +10,6 @@ import java.util.logging.Logger;
 
 public class BasicsTest {
 
-    @Test
-    public void references() {
-        Runnable run = this::display;
-
-        new Thread(run).start();
-    }
-
     private void display() {
         System.out.println("ha-ha-ha");
         try {
@@ -29,6 +22,21 @@ public class BasicsTest {
 
     private String message() {
         return "ha-ha-ha" + System.currentTimeMillis();
+    }
+
+    private void duration(long start) {
+        System.out.println("-- took: " + (System.currentTimeMillis() - start));
+    }
+
+    private void onOverload(Runnable r, ThreadPoolExecutor executor) {
+        System.out.println("-- runnable " + r + " executor " + executor.getActiveCount());
+    }
+
+    @Test
+    public void references() {
+        Runnable run = this::display;
+
+        new Thread(run).start();
     }
 
     @Test
@@ -51,10 +59,12 @@ public class BasicsTest {
     @Test
     public void backPressure() {
         BlockingQueue<Runnable> queue = new LinkedBlockingDeque<>(2);
+
         ThreadPoolExecutor tp = new ThreadPoolExecutor(
                 1, 1,
                 60, TimeUnit.SECONDS,
-                queue, new ThreadPoolExecutor.CallerRunsPolicy());
+                queue, this::onOverload);
+
         long start = System.currentTimeMillis();
         tp.submit(this::display);
         duration(start);
@@ -64,10 +74,6 @@ public class BasicsTest {
         duration(start);
         tp.submit(this::display);
         duration(start);
-    }
-
-    private void duration(long start) {
-        System.out.println("-- took: " + (System.currentTimeMillis() - start));
     }
 
     @Test
