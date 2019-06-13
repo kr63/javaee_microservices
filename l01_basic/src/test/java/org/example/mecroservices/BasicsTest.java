@@ -1,4 +1,4 @@
-package com.example.mecroservices;
+package org.example.mecroservices;
 
 import org.junit.Test;
 

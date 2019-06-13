@@ -1,14 +1,37 @@
-package com.example.mecroservices;
+package org.example.mecroservices;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PipelineTest {
+
+    @Before
+    public void setUp() {
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "0");
+    }
+
+    @Test
+    public void forkJoinConfiguration() throws InterruptedException {
+        ExecutorService custom = Executors.newCachedThreadPool();
+        for (int i = 0; i < 200; i++) {
+            CompletableFuture.runAsync(this::slow, custom);
+        }
+        Thread.sleep(20000);
+
+    }
+
+    private void slow() {
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            Logger.getLogger(PipelineTest.class.getName()).log(Level.SEVERE, null, e);
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void pipeline() {
