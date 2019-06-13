@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -27,10 +28,21 @@ public class ClientTest {
         System.out.println("Single message: " + messageSingle);
 
         Supplier<String> messageSupplier = () -> this.tut.request().get(String.class);
-        CompletableFuture.supplyAsync(messageSupplier).thenAccept(this::consume).get();
+
+        CompletableFuture.supplyAsync(messageSupplier)
+                .thenAccept(this::consume)
+                .get();
+
+        CompletableFuture.supplyAsync(messageSupplier)
+                .thenAccept(this::post)
+                .get();
     }
 
     private void consume(String message) {
         System.out.println("Consumed message: " + message);
+    }
+
+    private void post(String message) {
+        this.tut.request().post(Entity.text(message));
     }
 }
