@@ -64,9 +64,14 @@ public class ClientTest {
         Supplier<String> messageSupplier = () -> this.tut.request().get(String.class);
         CompletableFuture.supplyAsync(messageSupplier, pool)
                 .thenApply(this::process)
+                .exceptionally(this::handle)
                 .thenAccept(this::consume)
                 .get();
 
+    }
+
+    private String handle(Throwable t) {
+        return "Sorry server overloaded";
     }
 
     private String process(String input) {
