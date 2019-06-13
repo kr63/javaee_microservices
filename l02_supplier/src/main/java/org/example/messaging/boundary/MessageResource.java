@@ -14,7 +14,7 @@ public class MessageResource {
 
     @POST
     public void message(String message) {
-        System.out.println("message = " + message);
+        System.out.println("(POST in MessageResource.class) message = " + message);
     }
 
 }
