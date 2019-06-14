@@ -71,7 +71,8 @@ public class ClientTest {
     }
 
     private String handle(Throwable t) {
-        return "Sorry server overloaded";
+        String s = "\nSorry server overloaded";
+        return t.getMessage() + s;
     }
 
     private String process(String input) {
