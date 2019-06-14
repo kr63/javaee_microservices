@@ -1,18 +1,27 @@
 package org.example.acync.boundary;
 
+import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("async")
 public class AsyncResource {
 
+    @Resource
+    ManagedExecutorService mes;
+
     @GET
     public void get(@Suspended AsyncResponse response) {
-        response.resume(this.doSomeWork());
+
+        CompletableFuture
+                .supplyAsync(this::doSomeWork, mes)
+                .thenAccept(response::resume);
     }
 
     private String doSomeWork() {
